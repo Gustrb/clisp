@@ -12,6 +12,7 @@ typedef enum {
     TOK_STRING,
     TOK_MULTIPLY,
     TOK_PLUS,
+    TOK_MINUS,
     TOK_STRING_LITERAL,
 } token_type_t;
 
