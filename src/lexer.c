@@ -8,7 +8,17 @@
 
 typedef enum {
     LEXER_STATE_START,
+
     LEXER_STATE_INTEGER,
+
+    // We found a -, but we don't know if it's a minus sign or a signed number
+    // We need to check the next character
+    LEXER_STATE_SIGNED_NUMBER_MINUS,
+
+    // We found a +, but we don't know if it's a plus sign or a signed number
+    // We need to check the next character
+    LEXER_STATE_SIGNED_NUMBER_PLUS,
+
     LEXER_STATE_STRING,
     LEXER_STATE_STRING_LITERAL,
 } lexer_state_t;
@@ -104,11 +114,18 @@ lexer_loop:
                         goto falltrough;
                     }
                     case '+': {
-                        token->type = TOK_PLUS;
-                        token->start = &lexer->input[lexer->pos];
-                        token->len = 1;
+                        start = lexer->pos;
+                        state = LEXER_STATE_SIGNED_NUMBER_PLUS;
                         lexer->pos++;
-                        goto falltrough;
+                        c = lexer->input[lexer->pos];
+                        goto lexer_loop;
+                    }
+                    case '-': {
+                        start = lexer->pos;
+                        state = LEXER_STATE_SIGNED_NUMBER_MINUS;
+                        lexer->pos++;
+                        c = lexer->input[lexer->pos];
+                        goto lexer_loop;
                     }
                     case '\"': {
                         start = lexer->pos;
@@ -124,6 +141,34 @@ lexer_loop:
                     }
                 }
             }; break;
+
+            case LEXER_STATE_SIGNED_NUMBER_PLUS: {
+                if (IS_DIGIT(c))
+                {
+                    state = LEXER_STATE_INTEGER;
+                    lexer->pos++;
+                    goto lexer_loop;
+                }
+
+                token->type = TOK_PLUS;
+                token->start = &lexer->input[lexer->pos - 1];
+                token->len = 1;
+                goto falltrough;
+            };
+
+            case LEXER_STATE_SIGNED_NUMBER_MINUS: {
+                if (IS_DIGIT(c))
+                {
+                    state = LEXER_STATE_INTEGER;
+                    lexer->pos++;
+                    goto lexer_loop;
+                }
+
+                token->type = TOK_MINUS;
+                token->start = &lexer->input[lexer->pos - 1];
+                token->len = 1;
+                goto falltrough;
+            };
 
             case LEXER_STATE_STRING_LITERAL: {
                 switch (c)

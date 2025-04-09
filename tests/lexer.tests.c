@@ -30,6 +30,7 @@ int should_be_able_to_lex_an_empty_string(void);
 int should_be_able_to_lex_a_program_with_strings(void);
 int should_be_able_to_lex_a_string_literal(void);
 int should_be_able_to_report_an_unterminated_string_literal(void);
+int should_be_able_to_lex_a_signed_integer(void);
 
 int main(void)
 {
@@ -42,6 +43,7 @@ int main(void)
     err = err || should_be_able_to_lex_a_program_with_strings();
     err = err || should_be_able_to_lex_a_string_literal();
     err = err || should_be_able_to_report_an_unterminated_string_literal();
+    err = err || should_be_able_to_lex_a_signed_integer();
 
     if (err == 0)
     {
@@ -864,6 +866,148 @@ int should_be_able_to_report_an_unterminated_string_literal(void)
     fprintf(
         stdout,
         "[PASS] should_be_able_to_report_an_unterminated_string_literal\n"
+    );
+
+    return 0;
+}
+
+int should_be_able_to_lex_a_signed_integer(void)
+{
+    fprintf(
+        stdout,
+        "[TEST] should_be_able_to_lex_a_signed_integer\n"
+    );
+
+    lexer_t l;
+    const char *input = "-123";
+    size_t input_len = strlen(input);
+    int err = lexer_init(&l, input, input_len);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
+            err
+        );
+        return 1;
+    }
+
+    token_t token;
+    err = lexer_next_token(&l, &token);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
+            err
+        );
+        return 1;
+    }
+
+    char *expected = "-123";
+    size_t expected_len = strlen(expected);
+    token_type_t expected_type = TOK_INTEGER;
+    err = assert_token(expected, expected_len, expected_type, &token);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected token %.*s, got %.*s\n",
+            (int)expected_len,
+            expected,
+            (int)token.len,
+            token.start
+        );
+        return 1;
+    }
+
+    err = lexer_next_token(&l, &token);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
+            err
+        );
+        return 1;
+    }
+    err = assert_token_type(TOK_EOF, token.type);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected token type %d, got %d\n",
+            TOK_EOF,
+            token.type
+        );
+        return 1;
+    }
+
+    input = "+123";
+    input_len = strlen(input);
+    err = lexer_init(&l, input, input_len);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
+            err
+        );
+        return 1;
+    }
+
+    err = lexer_next_token(&l, &token);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
+            err
+        );
+        return 1;
+    }
+
+    expected = "+123";
+    expected_len = strlen(expected);
+    expected_type = TOK_INTEGER;
+    err = assert_token(expected, expected_len, expected_type, &token);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected token %.*s, got %.*s\n",
+            (int)expected_len,
+            expected,
+            (int)token.len,
+            token.start
+        );
+        return 1;
+    }
+    err = lexer_next_token(&l, &token);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
+            err
+        );
+        return 1;
+    }
+    err = assert_token_type(TOK_EOF, token.type);
+    if (err != 0)
+    {
+        fprintf(
+            stderr,
+            "[FAIL] should_be_able_to_lex_a_signed_integer: expected token type %d, got %d\n",
+            TOK_EOF,
+            token.type
+        );
+        return 1;
+    }
+
+    fprintf(
+        stdout,
+        "[PASS] should_be_able_to_lex_a_signed_integer\n"
     );
 
     return 0;
