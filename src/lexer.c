@@ -19,6 +19,8 @@ typedef enum {
     // We need to check the next character
     LEXER_STATE_SIGNED_NUMBER_PLUS,
 
+    LEXER_STATE_FLOAT,
+
     LEXER_STATE_STRING,
     LEXER_STATE_STRING_LITERAL,
 } lexer_state_t;
@@ -147,6 +149,7 @@ lexer_loop:
                 {
                     state = LEXER_STATE_INTEGER;
                     lexer->pos++;
+                    c = lexer->input[lexer->pos];
                     goto lexer_loop;
                 }
 
@@ -161,6 +164,7 @@ lexer_loop:
                 {
                     state = LEXER_STATE_INTEGER;
                     lexer->pos++;
+                    c = lexer->input[lexer->pos];
                     goto lexer_loop;
                 }
 
@@ -195,6 +199,13 @@ lexer_loop:
                     c = lexer->input[lexer->pos];
                     goto lexer_loop;
                 }
+                if (c == '.')
+                {
+                    state = LEXER_STATE_FLOAT;
+                    lexer->pos++;
+                    c = lexer->input[lexer->pos];
+                    goto lexer_loop;
+                }
                 else
                 {
                     token->type = TOK_INTEGER;
@@ -203,6 +214,22 @@ lexer_loop:
                     goto falltrough;
                 }
             }; break;
+
+            case LEXER_STATE_FLOAT: {
+                if (IS_DIGIT(c))
+                {
+                    lexer->pos++;
+                    c = lexer->input[lexer->pos];
+                    goto lexer_loop;
+                }
+                else
+                {
+                    token->type = TOK_FLOAT;
+                    token->start = &lexer->input[start];
+                    token->len = lexer->pos - start;
+                    goto falltrough;
+                }
+            }
 
             case LEXER_STATE_STRING: {
                 if (IS_ALPHANUMERICAL(c))

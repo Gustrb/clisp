@@ -14,6 +14,7 @@ typedef enum {
     TOK_PLUS,
     TOK_MINUS,
     TOK_STRING_LITERAL,
+    TOK_FLOAT,
 } token_type_t;
 
 typedef struct {
