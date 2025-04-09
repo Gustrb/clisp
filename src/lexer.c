@@ -10,6 +10,7 @@ typedef enum {
     LEXER_STATE_START,
     LEXER_STATE_INTEGER,
     LEXER_STATE_STRING,
+    LEXER_STATE_STRING_LITERAL,
 } lexer_state_t;
 
 int lexer_init(lexer_t *lexer, const char *input, size_t input_len)
@@ -58,6 +59,12 @@ int lexer_next_token(lexer_t *lexer, token_t *token)
 
     while (1) {
 lexer_loop:
+        if (lexer->pos >= lexer->input_len && state == LEXER_STATE_STRING_LITERAL)
+        {
+            err = LEXER_ERR_UNTERMINATED_STRING_LITERAL;
+            goto falltrough;
+        }
+
         switch (state)
         {
             case LEXER_STATE_START: {
@@ -103,11 +110,36 @@ lexer_loop:
                         lexer->pos++;
                         goto falltrough;
                     }
+                    case '\"': {
+                        start = lexer->pos;
+                        state = LEXER_STATE_STRING_LITERAL;
+                        lexer->pos++;
+                        c = lexer->input[lexer->pos];
+                        goto lexer_loop;
+                    }
                     default: {
                         err = LEXER_ERR_UNKNOWN_TOKEN;
                         lexer->pos++;
                         goto falltrough;
                     }
+                }
+            }; break;
+
+            case LEXER_STATE_STRING_LITERAL: {
+                switch (c)
+                {
+                    case '\"': {
+                        token->type = TOK_STRING_LITERAL;
+                        token->start = &lexer->input[start];
+                        token->len = lexer->pos - start + 1;
+                        lexer->pos++;
+                        goto falltrough;
+                    };
+                    default: {
+                        lexer->pos++;
+                        c = lexer->input[lexer->pos];
+                        goto lexer_loop;
+                    };
                 }
             }; break;
 
