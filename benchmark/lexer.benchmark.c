@@ -39,9 +39,9 @@ int main(void)
 {
     printf("Lexer Benchmark\n");
 
-    benchmark_it("./benchmark/fixtures/code.small.lisp");
-    benchmark_it("./benchmark/fixtures/code.medium.lisp");
-    benchmark_it("./benchmark/fixtures/code.large.lisp");
+    benchmark_it("./benchmark/fixtures/small.lisp");
+    benchmark_it("./benchmark/fixtures/medium.lisp");
+    benchmark_it("./benchmark/fixtures/large.lisp");
 
     printf("Lexer Benchmark Complete\n");
 

@@ -105,6 +105,7 @@ lexer_loop:
                     }
                     default: {
                         err = LEXER_ERR_UNKNOWN_TOKEN;
+                        lexer->pos++;
                         goto falltrough;
                     }
                 }
