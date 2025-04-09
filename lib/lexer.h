@@ -12,6 +12,7 @@ typedef enum {
     TOK_STRING,
     TOK_MULTIPLY,
     TOK_PLUS,
+    TOK_STRING_LITERAL,
 } token_type_t;
 
 typedef struct {
@@ -32,8 +33,9 @@ typedef struct {
 
 int lexer_init(lexer_t *lexer, const char *input, size_t input_len);
 
-#define LEXER_ERR_TOKEN_NOT_DEFINED    -3
-#define LEXER_ERR_UNKNOWN_TOKEN        -4
+#define LEXER_ERR_TOKEN_NOT_DEFINED           -3
+#define LEXER_ERR_UNKNOWN_TOKEN               -4
+#define LEXER_ERR_UNTERMINATED_STRING_LITERAL -5
 
 int lexer_next_token(lexer_t *lexer, token_t *token);
 
