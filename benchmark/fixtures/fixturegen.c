@@ -310,8 +310,8 @@ int generate_string_chars(void)
 
 int generate_visible_string_char(void)
 {
-    const char *visible_chars = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-    char visible_char = visible_chars[rand() % 94];
+    const char *visible_chars = "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    char visible_char = visible_chars[rand() % 93];
     append_char(visible_char);
     return 1;
 }
