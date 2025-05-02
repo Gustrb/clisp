@@ -80,8 +80,12 @@ typedef DYNARRAY(form_t) program_t;
 #define PARSER_ERR_FAILED_TO_PARSE_NUMBER   -9
 #define PARSER_ERR_STRING_NOT_DEFINED       -10
 #define PARSER_ERR_SYMBOL_NOT_DEFINED       -11
+#define PARSER_ERR_EXPECTED_LPAREN          -12
+#define PARSER_ERR_UNEXPECTED_EOF           -13
 
 int parser_init(parser_t *parser, const char *input, size_t input_len);
 int parser_parse(parser_t *parser, program_t *program);
+
+int parser_free_program(program_t *program);
 
 #endif
