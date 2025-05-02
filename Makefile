@@ -1,7 +1,7 @@
 build-tests:
 	echo "Building tests..."
 	gcc -o dist/lexer.tests tests/lexer.tests.c src/lexer.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
-#	gcc -o dist/parser.tests tests/parser.tests.c src/parser.c src/lexer.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/parser.tests tests/parser.tests.c src/parser.c src/lexer.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
 
 build-benchmarks:
 	echo "Building benchmarks..."
@@ -10,7 +10,7 @@ build-benchmarks:
 
 run-tests:
 	./dist/lexer.tests
-#	./dist/parser.tests
+	./dist/parser.tests
 
 run-benchmarks:
 	./dist/fixturegen ./benchmark/fixtures/small.lisp 10

@@ -16,7 +16,7 @@ void flushbuffer(void);
 void append(const char *text);
 void append_char(char c);
 
-int gnerate_form_list(void);
+int generate_form_list(void);
 int generate_form(void);
 int generate_atom(void);
 int generate_list(void);
@@ -132,7 +132,7 @@ void append(const char *text)
     size += len;
 }
 
-int gnerate_form_list(void)
+int generate_form_list(void)
 {
     int choice = rand() % 2;
     if (choice == 0) return 0;
@@ -172,7 +172,7 @@ int generate_list(void)
 {
     int a = 2;
     append("(");
-    a += gnerate_form_list();
+    a += generate_form_list();
     append(")");
     return a;
 }
