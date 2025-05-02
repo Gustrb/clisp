@@ -1,34 +1,34 @@
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 #include "parser.h"
 
-#define dyarray_push_back(array, item) \
-    do {         \
-        if (array->size >= array->capacity) { \
-            size_t new_capacity = array->capacity * 2; \
-            if (new_capacity < 4) new_capacity = 4; \
-            array->items = realloc(array->items, new_capacity * sizeof(*array->items)); \
-            if (!array->items) return PARSER_ERR_MEMORY_ALLOCATION_FAILED; \
-            array->capacity = new_capacity; \
-        } \
-        array->items[array->size++] = item; \
-    } while (0); \
-
 int parser_init(parser_t *parser, const char *input, size_t input_len)
 {
-    if (parser == NULL) {
-        return PARSER_ERR_PARSER_NOT_DEFINED;
-    }
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!input) return PARSER_ERR_INPUT_NOT_DEFINED;
 
     int err = lexer_init(&parser->lexer, input, input_len);
-    if (err != 0) return err;
+    if (err) return err;
+
+    err = lexer_next_token(&parser->lexer, &parser->current_token);
+    if (err) return err;
 
     return 0;
 }
 
-int __parser_parse_form(parser_t *parser, form_t *form);
-int __parser_parse_list(parser_t *parser, list_t *list);
-int __parser_parse_atom(parser_t *parser, atom_t *atom);
+int parser_parse_form(parser_t *parser, form_t *form);
+int parser_parse_list(parser_t *parser, list_t *list);
+int parser_parse_atom(parser_t *parser, atom_t *atom);
+
+int parser_parse_number(parser_t *parser, number_t *number);
+int parser_parse_integer(parser_t *parser, int64_t *val);
+int parser_parse_float(parser_t *parser, double *val);
+
+int parser_parse_string(parser_t *parser, string_t *string);
+int parser_parse_symbol(parser_t *parser, symbol_t *symbol);
 
 int parser_parse(parser_t *parser, program_t *program)
 {
@@ -36,50 +36,196 @@ int parser_parse(parser_t *parser, program_t *program)
     if (!program) return PARSER_ERR_PROGRAM_NOT_DEFINED;
 
     int err;
-    while (1)
+    while (parser->current_token.type != TOK_EOF)
     {
-        err = lexer_next_token(&parser->lexer, &parser->current_token);
-        if (err != 0) return err;
-        if (parser->current_token.type == TOK_EOF) break;
-
         form_t form;
-        err = __parser_parse_form(parser, &form);
-        if (err != 0) return err;
+        err = parser_parse_form(parser, &form);
+        if (err) return err;
 
-        dyarray_push_back(program, form);
-        if (err != 0) return err;
-    }
-}
-
-int __parser_parse_form(parser_t *parser, form_t *form)
-{
-    memset(form, 0, sizeof(form_t));
-    if (parser->current_token.type == TOK_LPAREN)
-    {
-        list_t list = {0};
-        form->type = FORM_LIST;
-
-        int err = __parser_parse_list(parser, &list);
-        if (err != 0) return err;
-
-        form->list = list;
-        return 0;
+        DYNARRAY_PUSH(*program, form, form_t);
     }
 
-    form->type = FORM_ATOM;
-    atom_t atom = {0};
-    int err = __parser_parse_atom(parser, &atom);
-    if (err != 0) return err;
-    form->atom = atom;
     return 0;
 }
 
-int __parser_parse_list(parser_t *parser, list_t *list)
+int parser_parse_form(parser_t *parser, form_t *form)
 {
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!form) return PARSER_ERR_FORM_NOT_DEFINED;
 
+    int err;
+    if (parser->current_token.type == TOK_LPAREN)
+    {
+        form->type = FORM_LIST;
+        form->list.items = NULL;
+        form->list.size = 0;
+        form->list.capacity = 0;
+        err = parser_parse_list(parser, &form->list);
+        if (err) return err;
+    }
+    else
+    {
+        form->type = FORM_ATOM;
+        err = parser_parse_atom(parser, &form->atom);
+        if (err) return err;
+    }
+
+    return 0;
 }
 
-int __parser_parse_atom(parser_t *parser, atom_t *atom)
-{
 
+int parser_parse_list(parser_t *parser, list_t *list)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!list) return PARSER_ERR_LIST_NOT_DEFINED;
+
+    int err;
+    while (parser->current_token.type != TOK_RPAREN)
+    {
+        form_t form;
+        err = parser_parse_form(parser, &form);
+        if (err) return err;
+
+        DYNARRAY_PUSH(*list, form, form_t);
+    }
+
+    err = lexer_next_token(&parser->lexer, &parser->current_token);
+    if (err) return err;
+
+    return 0;
+}
+
+int parser_parse_atom(parser_t *parser, atom_t *atom)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!atom) return PARSER_ERR_ATOM_NOT_DEFINED;
+
+    int err;
+    // Atom can be a number, a symbol, or a string
+    if (parser->current_token.type == TOK_INTEGER || parser->current_token.type == TOK_FLOAT)
+    {
+        atom->type = ATOM_NUMBER;
+        err = parser_parse_number(parser, &atom->num);
+        if (err) return err;
+    }
+    else if (parser->current_token.type == TOK_STRING_LITERAL)
+    {
+        atom->type = ATOM_STRING;
+        err = parser_parse_string(parser, &atom->str);
+        if (err) return err;
+    }
+    else if (parser->current_token.type == TOK_STRING)
+    {
+        atom->type = ATOM_SYMBOL;
+        err = parser_parse_symbol(parser, &atom->sym);
+        if (err) return err;
+    }
+    
+    return 0;
+}
+
+int parser_parse_number(parser_t *parser, number_t *number)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!number) return PARSER_ERR_NUMBER_NOT_DEFINED;
+
+    assert(parser->current_token.type == TOK_INTEGER || parser->current_token.type == TOK_FLOAT);
+
+    int err;
+    if (parser->current_token.type == TOK_INTEGER)
+    {
+        number->type = NUMBER_INTEGER;
+        err = parser_parse_integer(parser, &number->integer);
+        if (err) return err;
+    }
+    else
+    {
+        number->type = NUMBER_FLOAT;
+        err = parser_parse_float(parser, &number->float_num);
+        if (err) return err;
+    }
+    
+    return 0;
+}
+
+int parser_parse_integer(parser_t *parser, int64_t *val)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!val) return PARSER_ERR_NUMBER_NOT_DEFINED;
+
+    if (parser->current_token.len > 31)
+    {
+        return PARSER_ERR_NUMBER_TOO_LARGE;
+    }
+
+    char buff[32];
+    for (size_t i = 0; i < parser->current_token.len; ++i)
+    {
+        buff[i] = parser->current_token.start[i];
+    }
+
+    buff[parser->current_token.len] = '\0';
+    char *endptr = NULL;
+
+    if ((*val = strtoll(buff, &endptr, 10)) != 0)
+    {
+        return PARSER_ERR_FAILED_TO_PARSE_NUMBER;
+    }
+
+    if (endptr == buff || *endptr != '\0')
+    {
+        return PARSER_ERR_FAILED_TO_PARSE_NUMBER;
+    }
+
+    return 0;
+}
+
+int parser_parse_float(parser_t *parser, double *val)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!val) return PARSER_ERR_NUMBER_NOT_DEFINED;
+
+    char buff[32];
+    if (parser->current_token.len > 31)
+    {
+        return PARSER_ERR_NUMBER_TOO_LARGE;
+    }
+
+    for (size_t i = 0; i < parser->current_token.len; ++i)
+    {
+        buff[i] = parser->current_token.start[i];
+    }
+    buff[parser->current_token.len] = '\0';
+
+    char *endptr = NULL;
+    *val = strtod(buff, &endptr);
+
+    if (endptr == buff || *endptr != '\0')
+    {
+        return PARSER_ERR_FAILED_TO_PARSE_NUMBER;
+    }
+
+    return 0;
+}
+
+int parser_parse_string(parser_t *parser, string_t *string)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!string) return PARSER_ERR_STRING_NOT_DEFINED;
+
+    string->chars = parser->current_token.start;
+    string->len = parser->current_token.len;
+
+    return 0;
+}
+
+int parser_parse_symbol(parser_t *parser, symbol_t *symbol)
+{
+    if (!parser) return PARSER_ERR_PARSER_NOT_DEFINED;
+    if (!symbol) return PARSER_ERR_SYMBOL_NOT_DEFINED;
+
+    symbol->chars = parser->current_token.start;
+    symbol->len = parser->current_token.len;
+
+    return 0;
 }
