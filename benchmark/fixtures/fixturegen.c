@@ -7,11 +7,12 @@
 #define MAX_OUTPUT_SIZE KB(1024)
 
 FILE *output_file;
-static char buffer[4096];
+static char buffer[KB(2048)];
 static size_t size = 0;
 
 char random_digit(void);
 int random_percent(int chance);
+int random_between(int min, int max);
 void flushbuffer(void);
 void append(const char *text);
 void append_char(char c);
@@ -25,7 +26,6 @@ int generate_symbol(void);
 int generate_string(void);
 int generate_integer(void);
 int generate_sign(void);
-int generate_digits(void);
 int generate_digit(void);
 int generate_float(void);
 int generate_symbol_rest(void);
@@ -89,6 +89,11 @@ int main(int argc, char **argv)
     fclose(output_file);
 
     return EXIT_SUCCESS;
+}
+
+int random_between(int min, int max)
+{
+    return min + rand() % (max - min + 1);
 }
 
 char random_digit(void)
@@ -191,32 +196,14 @@ int generate_number(void)
 
 int generate_integer(void)
 {
+    int size = random_between(1, 10);
     int total = 0;
-    int choice = random_percent(50);
 
-    if (choice == 0)
-    {
-        total += generate_sign();
-        total += generate_digits();
-        return total;
-    }
-
-    total += generate_digits();
-    return total;
-}
-
-int generate_digits(void)
-{
-    int total = 0;
-    int choice = random_percent(50);
-    if (choice == 0)
+    for (int i = 0; i < size; i++)
     {
         total += generate_digit();
-        total += generate_digits();
-        return total;
     }
 
-    total += generate_digit();
     return total;
 }
 
@@ -244,11 +231,18 @@ int generate_sign(void)
 
 int generate_float(void)
 {
+    int size = random_between(4, 10);
     int total = 0;
-    total += generate_sign();
-    total += generate_digits();
+    for (int i = 0; i < size/2; i++)
+    {
+        total += generate_digit();
+    }
     append_char('.');
-    total += generate_digits();
+    for (int i = 0; i < size/2; i++)
+    {
+        total += generate_digit();
+    }
+
     return total;    
 }
 
@@ -310,7 +304,7 @@ int generate_string_chars(void)
 
 int generate_visible_string_char(void)
 {
-    const char *visible_chars = "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    const char *visible_chars = "!#$%&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
     char visible_char = visible_chars[rand() % 93];
     append_char(visible_char);
     return 1;

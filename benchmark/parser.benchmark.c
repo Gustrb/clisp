@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lexer.h"
+#include "parser.h"
 #include "benchmark.h"
 
 #define SAMPLE_SIZE 20
@@ -16,23 +16,20 @@ void benchmark_it(const char *path)
         return;
     }
 
-    lexer_t l;
-
     for (size_t i = 0; i < SAMPLE_SIZE; i++) {
         double start = benchmark_get_time();
-        lexer_init(&l, string.data, string.size);
-        token_t token;
-        while (1) {
-            err = lexer_next_token(&l, &token);
-            if (err) {
-                fprintf(stderr, "Error lexing: %d\n", err);
-                break;
-            }
-
-            if (token.type == TOK_EOF) break;
+        parser_t parser;
+        program_t program = {0};
+        err = parser_init(&parser, string.data, string.size);
+        err = parser_parse(&parser, &program);
+        if (err) {
+            fprintf(stderr, "Error parsing: %d\n", err);
+            continue;
         }
+
         double end = benchmark_get_time();
         measures[i] = end - start;
+        parser_free_program(&program);
     }
 
     benchmark_free_fixture(&string);
@@ -41,13 +38,13 @@ void benchmark_it(const char *path)
 
 int main(void)
 {
-    printf("Lexer Benchmark\n");
+    printf("Parser Benchmark\n");
 
     benchmark_it("./benchmark/fixtures/small.lisp");
     benchmark_it("./benchmark/fixtures/medium.lisp");
     benchmark_it("./benchmark/fixtures/large.lisp");
 
-    printf("Lexer Benchmark Complete\n");
+    printf("Parser Benchmark Complete\n");
 
     return 0;
 }

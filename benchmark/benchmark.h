@@ -4,7 +4,7 @@
 typedef struct {
     char *data;
     size_t size;
-} string_t;
+} bstring_t;
 
 double benchmark_get_time(void);
 
@@ -16,8 +16,8 @@ double benchmark_get_time(void);
 #define BENCHMARK_ERR_OUT_OF_MEMORY        -6
 #define BENCHMARK_ERR_FAILED_TO_READ_FILE  -7
 
-int benchmark_load_fixture(const char *filepath, string_t *string);
-void benchmark_free_fixture(string_t *string);
+int benchmark_load_fixture(const char *filepath, bstring_t *string);
+void benchmark_free_fixture(bstring_t *string);
 
 void benchmark_report(const char *name, double *measures, size_t size);
 

@@ -17,6 +17,7 @@ int should_fail_to_parse_unbalanced_parentheses(void);
 int should_parse_multiple_top_level_forms(void);
 int should_parse_nested_function_calls(void);
 int should_parse_empty_list(void);
+int should_fail_to_parse_unfinished_lists(void);
 
 int main(void) {
     int err = 0;
@@ -34,6 +35,7 @@ int main(void) {
     err = err || should_parse_multiple_top_level_forms();
     err = err || should_parse_nested_function_calls();
     err = err || should_parse_empty_list();
+    err = err || should_fail_to_parse_unfinished_lists();
 
     if (err == 0) {
         printf("[OK] All parser tests passed\n");
@@ -435,5 +437,24 @@ int should_parse_empty_list(void) {
     }
     parser_free_program(&program);
     fprintf(stdout, "[PASS] should_parse_empty_list\n");
+    return 0;
+}
+
+int should_fail_to_parse_unfinished_lists(void)
+{
+    fprintf(stdout, "[TEST] should_fail_to_parse_unfinished_lists\n");
+    parser_t parser;
+    program_t program = {0};
+    const char *input = "(1 (2 3) (4 5";
+    int err = parser_init(&parser, input, strlen(input));
+    if (err) return 1;
+
+    err = parser_parse(&parser, &program);
+    if (err != PARSER_ERR_UNEXPECTED_EOF) {
+        fprintf(stderr, "[FAIL] should_fail_to_parse_unfinished_lists: expected error %d, got %d\n", PARSER_ERR_UNEXPECTED_EOF, err);
+        return 1;
+    }
+
+    fprintf(stdout, "[PASS] should_fail_to_parse_unfinished_lists\n");
     return 0;
 }

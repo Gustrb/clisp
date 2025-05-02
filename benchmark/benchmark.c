@@ -30,7 +30,7 @@ double benchmark_get_time(void)
 
 #endif
 
-int benchmark_load_fixture(const char *filepath, string_t *string)
+int benchmark_load_fixture(const char *filepath, bstring_t *string)
 {
     if (!filepath) return BENCHMARK_ERR_NO_FILE;
     if (!string) return BENCHMARK_ERR_NO_STRING;
@@ -74,7 +74,7 @@ int benchmark_load_fixture(const char *filepath, string_t *string)
     return 0;
 }
 
-void benchmark_free_fixture(string_t *string)
+void benchmark_free_fixture(bstring_t *string)
 {
     if (string == NULL) {
         return;
@@ -99,6 +99,43 @@ double benchmark_stddev(double *measures, size_t size, double avg)
         sum += diff * diff;
     }
     return sqrt(sum / size);
+}
+
+int compare_doubles(const void *a, const void *b)
+{
+    double diff = *(double *)a - *(double *)b;
+    return (diff > 0) - (diff < 0);
+}
+
+double benchmark_median(double *measures, size_t size)
+{
+    if (measures == NULL || size == 0) {
+        return 0.0;
+    }
+
+    // We dont need to copy, we could just sort the original
+    // TODO: check if this is a problem
+    double *sorted = malloc(size * sizeof(double));
+    if (sorted == NULL) {
+        return 0.0;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        sorted[i] = measures[i];
+    }
+
+    // Sort the array
+    qsort(sorted, size, sizeof(double), compare_doubles);
+
+    double median;
+    if (size % 2 == 0) {
+        median = (sorted[size / 2 - 1] + sorted[size / 2]) / 2.0;
+    } else {
+        median = sorted[size / 2];
+    }
+
+    free(sorted);
+    return median;
 }
 
 void benchmark_report(const char *name, double *measures, size_t size)
@@ -129,7 +166,9 @@ void benchmark_report(const char *name, double *measures, size_t size)
 
     printf("Benchmark: %s\n", name);
     printf("Average: %.6f seconds\n", avg);
+    printf("Median: %.6f seconds\n", benchmark_median(measures, size));
     printf("Minimum: %.6f seconds\n", min);
     printf("Maximum: %.6f seconds\n", max);
     printf("Standard Deviation: %.6f seconds\n", benchmark_stddev(measures, size, avg));
+    printf("--------------------------------------------------\n");
 }
