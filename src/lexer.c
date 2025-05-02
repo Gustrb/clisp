@@ -2,7 +2,7 @@
 
 #include "lexer.h"
 
-#define IS_ALPHABETICAL(c) ((c) >= 'a' && (c) <= 'z') || ((c) >= 'A' && (c) <= 'Z')
+#define IS_ALPHABETICAL(c) ((c) >= 'a' && (c) <= 'z') || ((c) >= 'A' && (c) <= 'Z') || ((c) == '_')
 #define IS_ALPHANUMERICAL(c) IS_ALPHABETICAL(c) || IS_DIGIT(c)
 #define IS_DIGIT(c) ((c) >= '0' && (c) <= '9')
 
@@ -128,6 +128,13 @@ lexer_loop:
                         lexer->pos++;
                         c = lexer->input[lexer->pos];
                         goto lexer_loop;
+                    }
+                    case '=': {
+                        token->type = TOK_EQUAL;
+                        token->start = &lexer->input[lexer->pos];
+                        token->len = 1;
+                        lexer->pos++;
+                        goto falltrough;
                     }
                     case '\"': {
                         start = lexer->pos;
