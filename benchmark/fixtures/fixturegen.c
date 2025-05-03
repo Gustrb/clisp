@@ -6,17 +6,17 @@
 #define KB(x) ((x) * 1024)
 #define MAX_OUTPUT_SIZE KB(1024)
 
+const char *letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const char *visible_chars = "!#$%&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+
 FILE *output_file;
 static char buffer[KB(2048)];
 static size_t size = 0;
 
-// TODO: this code is pretty much a translation from the grammar, so it is not efficient.
-//       there is a lot of recursion that can be avoided here.
 char random_digit(void);
 int random_percent(int chance);
 int random_between(int min, int max);
 void flushbuffer(void);
-void append(const char *text);
 void append_char(char c);
 
 int generate_form_list(void);
@@ -30,8 +30,6 @@ int generate_integer(void);
 int generate_sign(void);
 int generate_digit(void);
 int generate_float(void);
-int generate_symbol_rest(void);
-int generate_string_chars(void);
 int generate_visible_string_char(void);
 int generate_letter(void);
 
@@ -127,17 +125,6 @@ void append_char(char c)
     buffer[size++] = c;
 }
 
-void append(const char *text)
-{
-    size_t len = strlen(text);
-    if (size + len >= sizeof(buffer))
-    {
-        flushbuffer();
-    }
-
-    memcpy(buffer + size, text, len);
-    size += len;
-}
 
 int generate_form_list(void)
 {
@@ -178,9 +165,9 @@ int generate_atom(void)
 int generate_list(void)
 {
     int a = 2;
-    append("(");
+    append_char('(');
     a += generate_form_list();
-    append(")");
+    append_char(')');
     return a;
 }
 
@@ -248,9 +235,9 @@ int generate_float(void)
     return total;    
 }
 
+
 int generate_letter(void)
 {
-    const char *letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     char letter = letters[rand() % 52];
     append_char(letter);
     return 1;
@@ -258,29 +245,21 @@ int generate_letter(void)
 
 int generate_symbol(void)
 {
+    size_t size = random_between(1, 10);
     int total = 0;
     total += generate_letter();
-    total += generate_symbol_rest();
-    return total;
-}
-
-int generate_symbol_rest(void)
-{
-    int choice = rand() % 3;
-    if (choice == 0) return 0;
-
-    int total = 0;
-    if (choice == 1)
+    for (size_t i = 1; i < size; i++)
     {
-        total += generate_letter();
-        total += generate_symbol_rest();
+        int choice = rand() % 2;
+        if (choice == 0)
+        {
+            total += generate_letter();
+        }
+        else
+        {
+            total += generate_digit();
+        }
     }
-    else
-    {
-        total += generate_digit();
-        total += generate_symbol_rest();
-    }
-
     return total;
 }
 
@@ -288,26 +267,26 @@ int generate_string(void)
 {
     int total = 2;
     append_char('"');
-    total += generate_string_chars();
+    int size = random_between(1, 10);
+    for (int i = 0; i < size; i++)
+    {
+        int choice = rand() % 2;
+        if (choice == 0)
+        {
+            total += generate_visible_string_char();
+        }
+        else
+        {
+            total += generate_digit();
+        }
+    }
     append_char('"');
-    return total;
-}
-
-int generate_string_chars(void)
-{
-    int choice = rand() % 2;
-    if (choice == 0) return 0;
-
-    int total = 0;
-    total += generate_visible_string_char();
-    total += generate_string_chars();
     return total;
 }
 
 int generate_visible_string_char(void)
 {
-    const char *visible_chars = "!#$%&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-    char visible_char = visible_chars[rand() % 93];
+    char visible_char = visible_chars[rand() % strlen(visible_chars)];
     append_char(visible_char);
     return 1;
 }

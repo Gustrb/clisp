@@ -6,14 +6,7 @@
 
 #ifdef WIN32
 
-#include <windows.h>
-double benchmark_get_time(void)
-{
-    LARGE_INTEGER t, f;
-    QueryPerformanceCounter(&t);
-    QueryPerformanceFrequency(&f);
-    return (double)t.QuadPart/(double)f.QuadPart;
-}
+#error "Windows is not supported yet. Please use Linux or MacOS."
 
 #else
 
