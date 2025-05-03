@@ -6,8 +6,8 @@ build-tests:
 build-benchmarks:
 	echo "Building benchmarks..."
 	gcc -o dist/fixturegen benchmark/fixtures/fixturegen.c -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
-	gcc -o dist/lexer.benchmarks benchmark/lexer.benchmark.c -O3 benchmark/benchmark.c src/lexer.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
-	gcc -o dist/parser.benchmarks benchmark/parser.benchmark.c -O3 benchmark/benchmark.c src/lexer.c src/parser.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/lexer.benchmarks benchmark/lexer.benchmark.c -O3 benchmark/benchmark.c src/lexer.c src/io.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/parser.benchmarks benchmark/parser.benchmark.c -O3 benchmark/benchmark.c src/lexer.c src/parser.c src/io.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
 
 	./dist/fixturegen ./benchmark/fixtures/small.lisp 100
 	./dist/fixturegen ./benchmark/fixtures/medium.lisp 10000
@@ -20,3 +20,18 @@ run-tests:
 run-benchmarks:
 	./dist/lexer.benchmarks
 	./dist/parser.benchmarks
+
+build-plain:
+	echo "Building plain..."
+	gcc -o dist/plain.singlethread src/plain/single-thread/main.c src/lexer.c src/parser.c src/io.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
+
+
+run-plain:
+	mkdir -p ./benchmark/fixtures/data
+
+	./dist/fixturegen ./benchmark/fixtures/data/small.lisp 1000
+	./dist/fixturegen ./benchmark/fixtures/data/medium.lisp 10000
+	./dist/fixturegen ./benchmark/fixtures/data/large.lisp 100000
+
+	FILES=$$(find ./benchmark/fixtures/data -type f -name "*.lisp" | paste -sd ' ' -); \
+	./dist/plain.singlethread $$FILES

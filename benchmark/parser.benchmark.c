@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "io.h"
 #include "parser.h"
 #include "benchmark.h"
 
@@ -9,8 +10,8 @@ static double measures[SAMPLE_SIZE];
 
 void benchmark_it(const char *path)
 {
-    bstring_t string;
-    int err = benchmark_load_fixture(path, &string);
+    io_str_t string;
+    int err = io_load_file_into_memory(path, &string);
     if (err) {
         fprintf(stderr, "Error loading fixture: %d\n", err);
         return;
@@ -32,7 +33,7 @@ void benchmark_it(const char *path)
         parser_free_program(&program);
     }
 
-    benchmark_free_fixture(&string);
+    io_free_string(&string);
     benchmark_report(path, measures, SAMPLE_SIZE);
 }
 

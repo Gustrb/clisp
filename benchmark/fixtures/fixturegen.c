@@ -10,6 +10,8 @@ FILE *output_file;
 static char buffer[KB(2048)];
 static size_t size = 0;
 
+// TODO: this code is pretty much a translation from the grammar, so it is not efficient.
+//       there is a lot of recursion that can be avoided here.
 char random_digit(void);
 int random_percent(int chance);
 int random_between(int min, int max);
