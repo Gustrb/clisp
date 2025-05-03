@@ -30,63 +30,6 @@ double benchmark_get_time(void)
 
 #endif
 
-int benchmark_load_fixture(const char *filepath, bstring_t *string)
-{
-    if (!filepath) return BENCHMARK_ERR_NO_FILE;
-    if (!string) return BENCHMARK_ERR_NO_STRING;
-
-    FILE *file = fopen(filepath, "r");
-    if (!file) return BENCHMARK_ERR_FAILED_TO_OPEN_FILE;
-
-    if (fseek(file, 0, SEEK_END) != 0) {
-        fclose(file);
-        return BENCHMARK_ERR_FAILED_TO_SEEK_FILE;
-    }
-
-    long size = ftell(file);
-    if (size < 0) {
-        fclose(file);
-        return BENCHMARK_ERR_FAILED_TO_FTELL_FILE;
-    }
-
-    if (fseek(file, 0, SEEK_SET) != 0) {
-        fclose(file);
-        return BENCHMARK_ERR_FAILED_TO_SEEK_FILE;
-    }
-
-    string->data = (char *)malloc(size + 1);
-    if (!string->data) {
-        fclose(file);
-        return BENCHMARK_ERR_OUT_OF_MEMORY;
-    }
-
-    ssize_t read = fread(string->data, 1, size, file);
-    if (read != size) {
-        free(string->data);
-        fclose(file);
-        return BENCHMARK_ERR_FAILED_TO_READ_FILE;
-    }
-
-    string->data[size] = '\0'; // Null-terminate the string
-    string->size = size;
-    fclose(file);
-
-    return 0;
-}
-
-void benchmark_free_fixture(bstring_t *string)
-{
-    if (string == NULL) {
-        return;
-    }
-
-    if (string->data) {
-        free(string->data);
-        string->data = NULL;
-    }
-    string->size = 0;
-}
-
 double benchmark_stddev(double *measures, size_t size, double avg)
 {
     if (measures == NULL || size == 0) {
