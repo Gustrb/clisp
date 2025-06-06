@@ -18,19 +18,21 @@ double benchmark_get_time(void)
     struct timeval t;
     struct timezone tzp;
     gettimeofday(&t, &tzp);
-    return t.tv_sec + t.tv_usec*1e-6;
+    return t.tv_sec + t.tv_usec * 1e-6;
 }
 
 #endif
 
 double benchmark_stddev(double *measures, size_t size, double avg)
 {
-    if (measures == NULL || size == 0) {
+    if (measures == NULL || size == 0)
+    {
         return 0.0;
     }
 
     double sum = 0.0;
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++)
+    {
         double diff = measures[i] - avg;
         sum += diff * diff;
     }
@@ -45,18 +47,21 @@ int compare_doubles(const void *a, const void *b)
 
 double benchmark_median(double *measures, size_t size)
 {
-    if (measures == NULL || size == 0) {
+    if (measures == NULL || size == 0)
+    {
         return 0.0;
     }
 
     // We dont need to copy, we could just sort the original
     // TODO: check if this is a problem
     double *sorted = malloc(size * sizeof(double));
-    if (sorted == NULL) {
+    if (sorted == NULL)
+    {
         return 0.0;
     }
 
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++)
+    {
         sorted[i] = measures[i];
     }
 
@@ -64,9 +69,12 @@ double benchmark_median(double *measures, size_t size)
     qsort(sorted, size, sizeof(double), compare_doubles);
 
     double median;
-    if (size % 2 == 0) {
+    if (size % 2 == 0)
+    {
         median = (sorted[size / 2 - 1] + sorted[size / 2]) / 2.0;
-    } else {
+    }
+    else
+    {
         median = sorted[size / 2];
     }
 
@@ -74,9 +82,10 @@ double benchmark_median(double *measures, size_t size)
     return median;
 }
 
-void benchmark_report(const char *name, double *measures, size_t size)
+void benchmark_report(char *name, double *measures, size_t size)
 {
-    if (name == NULL || measures == NULL || size == 0) {
+    if (name == NULL || measures == NULL || size == 0)
+    {
         return;
     }
 
@@ -88,12 +97,15 @@ void benchmark_report(const char *name, double *measures, size_t size)
     double min = measures[0];
     double max = measures[0];
 
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++)
+    {
         sum += measures[i];
-        if (measures[i] < min) {
+        if (measures[i] < min)
+        {
             min = measures[i];
         }
-        if (measures[i] > max) {
+        if (measures[i] > max)
+        {
             max = measures[i];
         }
     }

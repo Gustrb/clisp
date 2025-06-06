@@ -2,6 +2,10 @@ build-tests:
 	echo "Building tests..."
 	gcc -o dist/lexer.tests tests/lexer.tests.c src/lexer.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/parser.tests tests/parser.tests.c src/parser.c src/lexer.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/serialize-deserialize.tests tests/serialize-deserialize.tests.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
+
+	gcc -o dist/serial-over-the-wire.server tests/serial-over-the-wire/server.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/serial-over-the-wire.client tests/serial-over-the-wire/client.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
 
 build-benchmarks:
 	echo "Building benchmarks..."
@@ -16,6 +20,12 @@ build-benchmarks:
 run-tests:
 	./dist/lexer.tests
 	./dist/parser.tests
+	./dist/serialize-deserialize.tests
+
+	./dist/serial-over-the-wire.server&
+	sleep 1
+	./dist/serial-over-the-wire.client
+	sleep 1
 
 run-benchmarks:
 	./dist/lexer.benchmarks

@@ -7,15 +7,15 @@
 
 typedef struct
 {
-    const char *filename;
+    char *filename;
     program_t program;
 } m_unit_t;
 
 typedef DYNARRAY(m_unit_t) module_t;
 
-int module_parse_files(module_t *mod, const char **filenames, size_t count);
+int module_parse_files(module_t *mod, char **filenames, size_t count);
 
-int main(int argc, const char **argv)
+int main(int argc, char **argv)
 {
     if (argc < 2)
     {
@@ -40,7 +40,7 @@ int main(int argc, const char **argv)
     return EXIT_SUCCESS;
 }
 
-int module_parse_files(module_t *mod, const char **filenames, size_t count)
+int module_parse_files(module_t *mod, char **filenames, size_t count)
 {
     parser_t parser = {0};
     int err = 0;
