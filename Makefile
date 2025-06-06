@@ -33,8 +33,8 @@ run-benchmarks:
 
 build-plain:
 	echo "Building plain..."
-	gcc -o dist/plain.singlethread src/plain/single-thread/main.c src/lexer.c src/parser.c src/io.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
-
+	gcc -o dist/plain.singlethread src/plain/single-thread/main.c src/lexer.c src/parser.c src/io.c benchmark/benchmark.c -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/plain.threaded src/plain/threaded/main.c src/lexer.c src/parser.c src/io.c benchmark/benchmark.c -I ./lib -Wall -Wall -Wextra -pedantic -lm -lpthread
 
 run-plain:
 	mkdir -p ./benchmark/fixtures/data
@@ -42,6 +42,6 @@ run-plain:
 	./dist/fixturegen ./benchmark/fixtures/data/small.lisp 1000
 	./dist/fixturegen ./benchmark/fixtures/data/medium.lisp 10000
 	./dist/fixturegen ./benchmark/fixtures/data/large.lisp 100000
-
 	FILES=$$(find ./benchmark/fixtures/data -type f -name "*.lisp" | paste -sd ' ' -); \
-	./dist/plain.singlethread $$FILES
+	time ./dist/plain.singlethread $$FILES; \
+	time ./dist/plain.threaded $$FILES;
