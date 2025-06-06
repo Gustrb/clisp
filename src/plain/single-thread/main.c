@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "dynarray.h"
 #include "io.h"
+#include "benchmark.h"
 
 typedef struct
 {
@@ -23,10 +24,14 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    printf("[INFO]: Running Single-threaded parser\n");
+    printf("[INFO]: Number of files: %d\n", argc);
+
+    double start_time = benchmark_get_time();
+
     argv++;
     argc--;
 
-    // we are leaking this, but since the program halts, it doesn't really matter
     module_t module = {0};
     int err = module_parse_files(&module, argv, argc);
     if (err != 0)
@@ -35,7 +40,18 @@ int main(int argc, char **argv)
         return err;
     }
 
-    fprintf(stderr, "Parsed %zu files successfully.\n", module.size);
+    for (size_t i = 0; i < module.size; ++i)
+    {
+        parser_free_program(&module.items[i].program);
+    }
+
+    double end_time = benchmark_get_time();
+    double duration = end_time - start_time;
+
+    fprintf(stderr, "[INFO]: Parsed %zu files successfully.\n", module.size);
+    printf("[INFO]: Parsing time: %f seconds\n", duration);
+
+    DYNARRAY_FREE(module);
 
     return EXIT_SUCCESS;
 }
