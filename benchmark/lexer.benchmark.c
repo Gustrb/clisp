@@ -8,29 +8,34 @@
 #define SAMPLE_SIZE 20
 static double measures[SAMPLE_SIZE];
 
-void benchmark_it(const char *path)
+void benchmark_it(char *path)
 {
     io_str_t string;
     int err = io_load_file_into_memory(path, &string);
-    if (err) {
+    if (err)
+    {
         fprintf(stderr, "Error loading fixture: %d\n", err);
         return;
     }
 
     lexer_t l;
 
-    for (size_t i = 0; i < SAMPLE_SIZE; i++) {
+    for (size_t i = 0; i < SAMPLE_SIZE; i++)
+    {
         double start = benchmark_get_time();
         lexer_init(&l, string.data, string.size);
         token_t token;
-        while (1) {
+        while (1)
+        {
             err = lexer_next_token(&l, &token);
-            if (err) {
+            if (err)
+            {
                 fprintf(stderr, "Error lexing: %d\n", err);
                 break;
             }
 
-            if (token.type == TOK_EOF) break;
+            if (token.type == TOK_EOF)
+                break;
         }
         double end = benchmark_get_time();
         measures[i] = end - start;

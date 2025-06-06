@@ -6,8 +6,8 @@
 #define KB(x) ((x) * 1024)
 #define MAX_OUTPUT_SIZE KB(1024)
 
-const char *letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const char *visible_chars = "!#$%&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+char *letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+char *visible_chars = "!#$%&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 FILE *output_file;
 static char buffer[KB(2048)];
@@ -33,7 +33,8 @@ int generate_float(void);
 int generate_visible_string_char(void);
 int generate_letter(void);
 
-typedef enum {
+typedef enum
+{
     PROGRAM = 0,
     FORM_LIST,
     FORM,
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    const char *filepath = argv[1];
+    char *filepath = argv[1];
     int size_in_kb = atoi(argv[2]);
     if (size_in_kb <= 0)
     {
@@ -70,11 +71,11 @@ int main(int argc, char **argv)
     }
 
     output_file = fopen(filepath, "w");
-    if (!output_file) {
+    if (!output_file)
+    {
         perror("fopen");
         return EXIT_FAILURE;
     }
-
 
     srand(time(NULL));
 
@@ -98,11 +99,12 @@ int random_between(int min, int max)
 
 char random_digit(void)
 {
-    const char *digits = "0123456789";
+    char *digits = "0123456789";
     return digits[rand() % 10];
 }
 
-int random_percent(int chance) {
+int random_percent(int chance)
+{
     return rand() % 100 < chance;
 }
 
@@ -125,11 +127,11 @@ void append_char(char c)
     buffer[size++] = c;
 }
 
-
 int generate_form_list(void)
 {
     int choice = rand() % 2;
-    if (choice == 0) return 0;
+    if (choice == 0)
+        return 0;
 
     return generate_form();
 }
@@ -222,19 +224,18 @@ int generate_float(void)
 {
     int size = random_between(4, 10);
     int total = 0;
-    for (int i = 0; i < size/2; i++)
+    for (int i = 0; i < size / 2; i++)
     {
         total += generate_digit();
     }
     append_char('.');
-    for (int i = 0; i < size/2; i++)
+    for (int i = 0; i < size / 2; i++)
     {
         total += generate_digit();
     }
 
-    return total;    
+    return total;
 }
-
 
 int generate_letter(void)
 {

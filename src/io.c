@@ -3,38 +3,46 @@
 
 #include "io.h"
 
-int io_load_file_into_memory(const char *filepath, io_str_t *string)
+int io_load_file_into_memory(char *filepath, io_str_t *string)
 {
-    if (!filepath) return ERR_NO_FILE;
-    if (!string) return ERR_NO_STRING;
+    if (!filepath)
+        return ERR_NO_FILE;
+    if (!string)
+        return ERR_NO_STRING;
 
     FILE *file = fopen(filepath, "r");
-    if (!file) return ERR_FAILED_TO_OPEN_FILE;
+    if (!file)
+        return ERR_FAILED_TO_OPEN_FILE;
 
-    if (fseek(file, 0, SEEK_END) != 0) {
+    if (fseek(file, 0, SEEK_END) != 0)
+    {
         fclose(file);
         return ERR_FAILED_TO_SEEK_FILE;
     }
 
     long size = ftell(file);
-    if (size < 0) {
+    if (size < 0)
+    {
         fclose(file);
         return ERR_FAILED_TO_FTELL_FILE;
     }
 
-    if (fseek(file, 0, SEEK_SET) != 0) {
+    if (fseek(file, 0, SEEK_SET) != 0)
+    {
         fclose(file);
         return ERR_FAILED_TO_SEEK_FILE;
     }
 
     string->data = (char *)malloc(size + 1);
-    if (!string->data) {
+    if (!string->data)
+    {
         fclose(file);
         return ERR_OUT_OF_MEMORY;
     }
 
     ssize_t read = fread(string->data, 1, size, file);
-    if (read != size) {
+    if (read != size)
+    {
         free(string->data);
         fclose(file);
         return ERR_FAILED_TO_READ_FILE;
@@ -49,9 +57,11 @@ int io_load_file_into_memory(const char *filepath, io_str_t *string)
 
 int io_free_string(io_str_t *string)
 {
-    if (!string) return ERR_NO_STRING;
+    if (!string)
+        return ERR_NO_STRING;
 
-    if (string->data) free(string->data);
+    if (string->data)
+        free(string->data);
     string->data = NULL;
     string->size = 0;
 

@@ -8,18 +8,21 @@ static inline int assert_token(
     char *expected,
     size_t expected_len,
     token_type_t expected_type,
-    token_t *actual
-) {
-    if (expected_type != actual->type)                       return 1;
-    if (expected_len  != actual->len)                        return 1;
-    if (strncmp(expected, actual->start, expected_len) != 0) return 1;
+    token_t *actual)
+{
+    if (expected_type != actual->type)
+        return 1;
+    if (expected_len != actual->len)
+        return 1;
+    if (strncmp(expected, actual->start, expected_len) != 0)
+        return 1;
     return 0;
 }
 
 static inline int assert_token_type(
     token_type_t expected,
-    token_type_t actual
-) {
+    token_type_t actual)
+{
     return (expected != actual) ? 1 : 0;
 }
 
@@ -64,11 +67,10 @@ int should_be_able_to_init_a_lexer(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_init_a_lexer\n"
-    );
+        "[TEST] should_be_able_to_init_a_lexer\n");
 
     int err = 0;
-    
+
     err = lexer_init(NULL, NULL, 0);
 
     if (err != LEXER_ERR_LEXER_NOT_DEFINED)
@@ -76,8 +78,7 @@ int should_be_able_to_init_a_lexer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_init_a_lexer: expected LEXER_ERR_LEXER_NOT_DEFINED, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -88,12 +89,11 @@ int should_be_able_to_init_a_lexer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_init_a_lexer: expected LEXER_ERR_INPUT_CANNOT_BE_NULL, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
-    const char *input = "test";
+    char *input = "test";
     size_t input_len = 4;
     err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -101,15 +101,13 @@ int should_be_able_to_init_a_lexer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_init_a_lexer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_init_a_lexer\n"
-    );
+        "[PASS] should_be_able_to_init_a_lexer\n");
 
     return 0;
 }
@@ -118,11 +116,10 @@ int should_be_able_to_lex_an_empty_string(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_lex_an_empty_string\n"
-    );
+        "[TEST] should_be_able_to_lex_an_empty_string\n");
 
     lexer_t l;
-    const char *input = "";
+    char *input = "";
     size_t input_len = 0;
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -130,8 +127,7 @@ int should_be_able_to_lex_an_empty_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_an_empty_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -142,8 +138,7 @@ int should_be_able_to_lex_an_empty_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_an_empty_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -154,15 +149,13 @@ int should_be_able_to_lex_an_empty_string(void)
             stderr,
             "[FAIL] should_be_able_to_lex_an_empty_string: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_an_empty_string\n"
-    );
+        "[PASS] should_be_able_to_lex_an_empty_string\n");
 
     return 0;
 }
@@ -171,11 +164,10 @@ int should_be_able_to_skip_whitespace(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_skip_whitespace\n"
-    );
+        "[TEST] should_be_able_to_skip_whitespace\n");
 
     lexer_t l;
-    const char *input = "  \t\n\r  ";
+    char *input = "  \t\n\r  ";
     size_t input_len = strlen(input);
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -183,8 +175,7 @@ int should_be_able_to_skip_whitespace(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_skip_whitespace: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -195,8 +186,7 @@ int should_be_able_to_skip_whitespace(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_skip_whitespace: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -207,14 +197,12 @@ int should_be_able_to_skip_whitespace(void)
             stderr,
             "[FAIL] should_be_able_to_skip_whitespace: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_skip_whitespace\n"
-    );
+        "[PASS] should_be_able_to_skip_whitespace\n");
     return 0;
 }
 
@@ -222,11 +210,10 @@ int should_be_able_to_lex_a_string(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_lex_a_string\n"
-    );
+        "[TEST] should_be_able_to_lex_a_string\n");
 
     lexer_t l;
-    const char *input = "(* 5 (+ 2 5))";
+    char *input = "(* 5 (+ 2 5))";
     size_t input_len = strlen(input);
 
     int err = lexer_init(&l, input, input_len);
@@ -235,8 +222,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -247,8 +233,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -264,8 +249,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -275,8 +259,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -292,8 +275,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -303,8 +285,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -320,8 +301,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -331,8 +311,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -348,8 +327,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -359,8 +337,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -376,8 +353,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -387,8 +363,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     expected = "2";
@@ -403,8 +378,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -414,8 +388,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     expected = "5";
@@ -430,8 +403,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
     err = lexer_next_token(&l, &token);
@@ -440,8 +412,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     expected = ")";
@@ -456,8 +427,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -467,8 +437,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -484,8 +453,7 @@ int should_be_able_to_lex_a_string(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -495,8 +463,7 @@ int should_be_able_to_lex_a_string(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -507,15 +474,13 @@ int should_be_able_to_lex_a_string(void)
             stderr,
             "[FAIL] should_be_able_to_skip_whitespace: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_a_string\n"
-    );
+        "[PASS] should_be_able_to_lex_a_string\n");
 
     return 0;
 }
@@ -524,11 +489,10 @@ int should_be_able_to_lex_a_program_with_strings(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_lex_a_program_with_strings\n"
-    );
+        "[TEST] should_be_able_to_lex_a_program_with_strings\n");
 
     lexer_t l;
-    const char *input = "(dog (cat))";
+    char *input = "(dog (cat))";
     size_t input_len = strlen(input);
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -536,8 +500,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -549,8 +512,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -566,8 +528,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -577,8 +538,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -594,8 +554,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -605,8 +564,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -622,8 +580,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -633,8 +590,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -650,8 +606,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -661,8 +616,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -678,8 +632,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -689,8 +642,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -706,8 +658,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -717,8 +668,7 @@ int should_be_able_to_lex_a_program_with_strings(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -729,16 +679,14 @@ int should_be_able_to_lex_a_program_with_strings(void)
             stderr,
             "[FAIL] should_be_able_to_lex_a_program_with_strings: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_a_program_with_strings\n"
-    );
-    
+        "[PASS] should_be_able_to_lex_a_program_with_strings\n");
+
     return 0;
 }
 
@@ -746,11 +694,10 @@ int should_be_able_to_lex_a_string_literal(void)
 {
     fprintf(
         stderr,
-        "[TEST] should_be_able_to_lex_a_string_literal\n"
-    );
+        "[TEST] should_be_able_to_lex_a_string_literal\n");
 
     lexer_t l;
-    const char *input = "\"hello world\"";
+    char *input = "\"hello world\"";
     size_t input_len = strlen(input);
 
     int err = lexer_init(&l, input, input_len);
@@ -759,8 +706,7 @@ int should_be_able_to_lex_a_string_literal(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string_literal: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -771,8 +717,7 @@ int should_be_able_to_lex_a_string_literal(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string_literal: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     char *expected = "\"hello world\"";
@@ -787,8 +732,7 @@ int should_be_able_to_lex_a_string_literal(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
     err = lexer_next_token(&l, &token);
@@ -797,8 +741,7 @@ int should_be_able_to_lex_a_string_literal(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_string_literal: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = assert_token_type(TOK_EOF, token.type);
@@ -808,15 +751,13 @@ int should_be_able_to_lex_a_string_literal(void)
             stderr,
             "[FAIL] should_be_able_to_lex_a_string_literal: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_a_string_literal\n"
-    );
+        "[PASS] should_be_able_to_lex_a_string_literal\n");
 
     return 0;
 }
@@ -825,11 +766,10 @@ int should_be_able_to_report_an_unterminated_string_literal(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_report_an_unterminated_string_literal\n"
-    );
+        "[TEST] should_be_able_to_report_an_unterminated_string_literal\n");
 
     lexer_t l;
-    const char *input = "\"hello world";
+    char *input = "\"hello world";
     size_t input_len = strlen(input);
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -837,8 +777,7 @@ int should_be_able_to_report_an_unterminated_string_literal(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_report_an_unterminated_string_literal: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -850,8 +789,7 @@ int should_be_able_to_report_an_unterminated_string_literal(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_report_an_unterminated_string_literal: expected LEXER_ERR_UNTERMINATED_STRING_LITERAL, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -862,15 +800,13 @@ int should_be_able_to_report_an_unterminated_string_literal(void)
             stderr,
             "[FAIL] should_be_able_to_report_an_unterminated_string_literal: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_report_an_unterminated_string_literal\n"
-    );
+        "[PASS] should_be_able_to_report_an_unterminated_string_literal\n");
 
     return 0;
 }
@@ -879,11 +815,10 @@ int should_be_able_to_lex_a_signed_integer(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_lex_a_signed_integer\n"
-    );
+        "[TEST] should_be_able_to_lex_a_signed_integer\n");
 
     lexer_t l;
-    const char *input = "-123";
+    char *input = "-123";
     size_t input_len = strlen(input);
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -891,8 +826,7 @@ int should_be_able_to_lex_a_signed_integer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -903,8 +837,7 @@ int should_be_able_to_lex_a_signed_integer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -920,8 +853,7 @@ int should_be_able_to_lex_a_signed_integer(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -931,8 +863,7 @@ int should_be_able_to_lex_a_signed_integer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = assert_token_type(TOK_EOF, token.type);
@@ -942,8 +873,7 @@ int should_be_able_to_lex_a_signed_integer(void)
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
@@ -955,8 +885,7 @@ int should_be_able_to_lex_a_signed_integer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -966,8 +895,7 @@ int should_be_able_to_lex_a_signed_integer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -983,8 +911,7 @@ int should_be_able_to_lex_a_signed_integer(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
     err = lexer_next_token(&l, &token);
@@ -993,8 +920,7 @@ int should_be_able_to_lex_a_signed_integer(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = assert_token_type(TOK_EOF, token.type);
@@ -1004,15 +930,13 @@ int should_be_able_to_lex_a_signed_integer(void)
             stderr,
             "[FAIL] should_be_able_to_lex_a_signed_integer: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_a_signed_integer\n"
-    );
+        "[PASS] should_be_able_to_lex_a_signed_integer\n");
 
     return 0;
 }
@@ -1021,11 +945,10 @@ int should_be_able_to_lex_floating_point_numbers(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_lex_floating_point_numbers\n"
-    );
+        "[TEST] should_be_able_to_lex_floating_point_numbers\n");
 
     lexer_t l;
-    const char *input = "3.14";
+    char *input = "3.14";
     size_t input_len = strlen(input);
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -1033,8 +956,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1045,8 +967,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1062,8 +983,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
     err = lexer_next_token(&l, &token);
@@ -1072,8 +992,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = assert_token_type(TOK_EOF, token.type);
@@ -1083,8 +1002,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
@@ -1096,8 +1014,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1107,8 +1024,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1124,8 +1040,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1135,8 +1050,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = assert_token_type(TOK_EOF, token.type);
@@ -1146,8 +1060,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
@@ -1159,8 +1072,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = lexer_next_token(&l, &token);
@@ -1169,8 +1081,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1187,8 +1098,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1198,8 +1108,7 @@ int should_be_able_to_lex_floating_point_numbers(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     err = assert_token_type(TOK_EOF, token.type);
@@ -1209,15 +1118,13 @@ int should_be_able_to_lex_floating_point_numbers(void)
             stderr,
             "[FAIL] should_be_able_to_lex_floating_point_numbers: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_floating_point_numbers\n"
-    );
+        "[PASS] should_be_able_to_lex_floating_point_numbers\n");
 
     return 0;
 }
@@ -1226,11 +1133,10 @@ int should_be_able_to_lex_a_math_expression(void)
 {
     fprintf(
         stdout,
-        "[TEST] should_be_able_to_lex_a_math_expression\n"
-    );
+        "[TEST] should_be_able_to_lex_a_math_expression\n");
 
     lexer_t l;
-    const char *input = "(+ 1.0 2.0)";
+    char *input = "(+ 1.0 2.0)";
     size_t input_len = strlen(input);
     int err = lexer_init(&l, input, input_len);
     if (err != 0)
@@ -1238,11 +1144,10 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
-    
+
     token_t token;
     err = lexer_next_token(&l, &token);
     if (err != 0)
@@ -1250,8 +1155,7 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1267,8 +1171,7 @@ int should_be_able_to_lex_a_math_expression(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1278,8 +1181,7 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1295,8 +1197,7 @@ int should_be_able_to_lex_a_math_expression(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1306,8 +1207,7 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     expected = "1.0";
@@ -1322,8 +1222,7 @@ int should_be_able_to_lex_a_math_expression(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1333,8 +1232,7 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     expected = "2.0";
@@ -1349,8 +1247,7 @@ int should_be_able_to_lex_a_math_expression(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1360,8 +1257,7 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
     expected = ")";
@@ -1377,8 +1273,7 @@ int should_be_able_to_lex_a_math_expression(void)
             (int)expected_len,
             expected,
             (int)token.len,
-            token.start
-        );
+            token.start);
         return 1;
     }
 
@@ -1389,8 +1284,7 @@ int should_be_able_to_lex_a_math_expression(void)
         fprintf(
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected 0, got %d\n",
-            err
-        );
+            err);
         return 1;
     }
 
@@ -1401,15 +1295,13 @@ int should_be_able_to_lex_a_math_expression(void)
             stderr,
             "[FAIL] should_be_able_to_lex_a_math_expression: expected token type %d, got %d\n",
             TOK_EOF,
-            token.type
-        );
+            token.type);
         return 1;
     }
 
     fprintf(
         stdout,
-        "[PASS] should_be_able_to_lex_a_math_expression\n"
-    );
+        "[PASS] should_be_able_to_lex_a_math_expression\n");
 
     return 0;
 }
