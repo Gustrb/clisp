@@ -6,18 +6,32 @@
 
 #include "serialize.h"
 
-#define BIG_ENDIAN_WRITE(buffer, value, type)      \
-    do                                             \
-    {                                              \
-        union                                      \
-        {                                          \
-            type v;                                \
-            char c[sizeof(type)];                  \
-        } u = {.v = value};                        \
-        for (size_t i = 0; i < sizeof(type); ++i)  \
-        {                                          \
-            buffer[i] = u.c[sizeof(type) - i - 1]; \
-        }                                          \
+#define BIG_ENDIAN_WRITE(buffer, value, type)                       \
+    do                                                              \
+    {                                                               \
+        union                                                       \
+        {                                                           \
+            type v;                                                 \
+            char c[sizeof(type)];                                   \
+        } u = {.v = value};                                         \
+        for (size_t i = 0; i < sizeof(type); ++i)                   \
+        {                                                           \
+            DYNARRAY_PUSH(buffer, u.c[sizeof(type) - i - 1], char); \
+        }                                                           \
+    } while (0)
+
+#define BIG_ENDIAN_WRITE_AT(buffer, value, type, offset)    \
+    do                                                      \
+    {                                                       \
+        union                                               \
+        {                                                   \
+            type v;                                         \
+            char c[sizeof(type)];                           \
+        } u = {.v = value};                                 \
+        for (size_t i = 0; i < sizeof(type); ++i)           \
+        {                                                   \
+            buffer[offset + i] = u.c[sizeof(type) - i - 1]; \
+        }                                                   \
     } while (0)
 
 #define BIG_ENDIAN_READ(buffer, value, type)       \
@@ -49,19 +63,14 @@ int serializer_init(serializer_t *serializer, int fd)
     return 0;
 }
 
-size_t __compute_atom_size(atom_t *atom);
-size_t __compute_list_size(list_t *list);
-size_t __compute_number_size(number_t *number);
-size_t __compute_string_size(string_t *string);
-size_t __compute_symbol_size(symbol_t *symbol);
-size_t __compute_form_size(form_t *form);
+typedef DYNARRAY(char) dyn_buffer_t;
 
-size_t __encode_form(form_t *form, char *buffer);
-size_t __encode_atom(atom_t *atom, char *buffer);
-size_t __encode_list(list_t *list, char *buffer);
-size_t __encode_number(number_t *number, char *buffer);
-size_t __encode_string(string_t *string, char *buffer);
-size_t __encode_symbol(symbol_t *symbol, char *buffer);
+size_t __encode_form(form_t *form, dyn_buffer_t *buffer);
+size_t __encode_atom(atom_t *atom, dyn_buffer_t *buffer);
+size_t __encode_list(list_t *list, dyn_buffer_t *buffer);
+size_t __encode_number(number_t *number, dyn_buffer_t *buffer);
+size_t __encode_string(string_t *string, dyn_buffer_t *buffer);
+size_t __encode_symbol(symbol_t *symbol, dyn_buffer_t *buffer);
 
 int serializer_serialize(serializer_t *serializer, program_t *program)
 {
@@ -70,185 +79,52 @@ int serializer_serialize(serializer_t *serializer, program_t *program)
     if (!program)
         return SERIALIZER_ERR_INVALID_ARGUMENT;
 
+    dyn_buffer_t dbuffer = {0};
+    for (size_t i = 0; i < sizeof(size_t); ++i)
+        DYNARRAY_PUSH(dbuffer, 0, char);
+
     // First thing we are going to encode is the size
     size_t numbytes = sizeof(program->size);
-    for (size_t i = 0; i < program->size; ++i)
-    {
-        form_t *form = &program->items[i];
-        numbytes += __compute_form_size(form);
-    }
-
-    // Write the total size first in big endian
-    char sizebuf[sizeof(size_t)];
-    BIG_ENDIAN_WRITE(sizebuf, numbytes, size_t);
-    ssize_t bytes_written = write(serializer->fd, sizebuf, sizeof(size_t));
-    if (bytes_written == -1)
-    {
-        return SERIALIZER_ERR_WRITE_FAILED;
-    }
-
-    if ((size_t)bytes_written != sizeof(size_t))
-    {
-        return SERIALIZER_ERR_WRITE_FAILED;
-    }
-
-    char *buffer = malloc(numbytes);
-    if (!buffer)
-        return SERIALIZER_ERR_MEMORY_ALLOCATION_FAILED;
-
-    // then we need to encode the data
-    char *current = buffer;
 
     // Write the program size
-    BIG_ENDIAN_WRITE(current, program->size, size_t);
-    current += sizeof(program->size);
+    BIG_ENDIAN_WRITE(dbuffer, program->size, size_t);
 
     // Write all the forms
     for (size_t i = 0; i < program->size; ++i)
     {
         form_t *form = &program->items[i];
-        size_t form_bytes = __encode_form(form, current);
-        current += form_bytes;
+        size_t form_bytes = __encode_form(form, &dbuffer);
+        numbytes += form_bytes;
     }
+
+    // Now we need to backpatch the size
+    BIG_ENDIAN_WRITE_AT(dbuffer.items, numbytes, size_t, 0);
 
     // then write the data
-    bytes_written = write(serializer->fd, buffer, numbytes);
+    ssize_t bytes_written = write(serializer->fd, dbuffer.items, dbuffer.size);
     if (bytes_written == -1)
     {
-        free(buffer);
+        DYNARRAY_FREE(dbuffer);
         return SERIALIZER_ERR_WRITE_FAILED;
     }
 
-    if ((size_t)bytes_written != numbytes)
+    if ((size_t)bytes_written != dbuffer.size)
     {
-        free(buffer);
+        DYNARRAY_FREE(dbuffer);
         return SERIALIZER_ERR_WRITE_FAILED;
     }
 
-    free(buffer);
+    DYNARRAY_FREE(dbuffer);
 
     return 0;
 }
 
-size_t __compute_atom_size(atom_t *atom)
-{
-    size_t numbytes = 0;
-
-    numbytes += sizeof(atom->type);
-
-    switch (atom->type)
-    {
-    case ATOM_NUMBER:
-    {
-        numbytes += __compute_number_size(&atom->num);
-        break;
-    }
-    case ATOM_STRING:
-    {
-        numbytes += __compute_string_size(&atom->str);
-        break;
-    }
-    case ATOM_SYMBOL:
-    {
-        numbytes += __compute_symbol_size(&atom->sym);
-        break;
-    }
-    }
-
-    return numbytes;
-}
-
-size_t __compute_list_size(list_t *list)
-{
-    size_t numbytes = 0;
-
-    numbytes += sizeof(list->size);
-
-    for (size_t i = 0; i < list->size; ++i)
-    {
-        form_t *form = &list->items[i];
-        numbytes += __compute_form_size(form);
-    }
-
-    return numbytes;
-}
-
-size_t __compute_number_size(number_t *number)
-{
-    size_t numbytes = 0;
-
-    numbytes += sizeof(number->type);
-
-    switch (number->type)
-    {
-    case NUMBER_INTEGER:
-    {
-        numbytes += sizeof(number->integer);
-        break;
-    }
-    case NUMBER_FLOAT:
-    {
-        numbytes += sizeof(number->float_num);
-        break;
-    }
-    }
-
-    return numbytes;
-}
-
-size_t __compute_string_size(string_t *string)
-{
-    size_t numbytes = 0;
-
-    numbytes += sizeof(string->len);
-    numbytes += string->len;
-
-    return numbytes;
-}
-
-size_t __compute_symbol_size(symbol_t *symbol)
-{
-    size_t numbytes = 0;
-
-    numbytes += sizeof(symbol->len);
-    numbytes += symbol->len;
-
-    return numbytes;
-}
-
-size_t __compute_form_size(form_t *form)
-{
-    size_t numbytes = 0;
-
-    // Then for each form we need to encode the type
-    numbytes += sizeof(form->type);
-
-    switch (form->type)
-    {
-    case FORM_ATOM:
-    {
-        atom_t *atom = &form->atom;
-        numbytes += __compute_atom_size(atom);
-        break;
-    }
-    case FORM_LIST:
-    {
-        list_t *list = &form->list;
-        numbytes += __compute_list_size(list);
-        break;
-    }
-    }
-
-    return numbytes;
-}
-
-size_t __encode_form(form_t *form, char *buffer)
+size_t __encode_form(form_t *form, dyn_buffer_t *buffer)
 {
     size_t numbytes = 0;
 
     numbytes += sizeof(form->type);
-    BIG_ENDIAN_WRITE(buffer, form->type, form_type_t);
-    buffer += sizeof(form->type);
+    BIG_ENDIAN_WRITE(*buffer, form->type, form_type_t);
 
     switch (form->type)
     {
@@ -269,13 +145,12 @@ size_t __encode_form(form_t *form, char *buffer)
     return numbytes;
 }
 
-size_t __encode_atom(atom_t *atom, char *buffer)
+size_t __encode_atom(atom_t *atom, dyn_buffer_t *buffer)
 {
     size_t numbytes = 0;
 
     numbytes += sizeof(atom->type);
-    BIG_ENDIAN_WRITE(buffer, atom->type, atom_type_t);
-    buffer += sizeof(atom->type);
+    BIG_ENDIAN_WRITE(*buffer, atom->type, atom_type_t);
 
     switch (atom->type)
     {
@@ -299,47 +174,42 @@ size_t __encode_atom(atom_t *atom, char *buffer)
     return numbytes;
 }
 
-size_t __encode_list(list_t *list, char *buffer)
+size_t __encode_list(list_t *list, dyn_buffer_t *buffer)
 {
     size_t numbytes = 0;
 
     numbytes += sizeof(list->size);
-    BIG_ENDIAN_WRITE(buffer, list->size, size_t);
-    buffer += sizeof(list->size);
+    BIG_ENDIAN_WRITE(*buffer, list->size, size_t);
 
     for (size_t i = 0; i < list->size; ++i)
     {
         form_t *form = &list->items[i];
         size_t form_bytes = __encode_form(form, buffer);
         numbytes += form_bytes;
-        buffer += form_bytes;
     }
 
     return numbytes;
 }
 
-size_t __encode_number(number_t *number, char *buffer)
+size_t __encode_number(number_t *number, dyn_buffer_t *buffer)
 {
     size_t numbytes = 0;
 
     numbytes += sizeof(number->type);
-    BIG_ENDIAN_WRITE(buffer, number->type, number_type_t);
-    buffer += sizeof(number->type);
+    BIG_ENDIAN_WRITE(*buffer, number->type, number_type_t);
 
     switch (number->type)
     {
     case NUMBER_INTEGER:
     {
         numbytes += sizeof(number->integer);
-        BIG_ENDIAN_WRITE(buffer, number->integer, int64_t);
-        buffer += sizeof(number->integer);
+        BIG_ENDIAN_WRITE(*buffer, number->integer, int64_t);
         break;
     }
     case NUMBER_FLOAT:
     {
         numbytes += sizeof(number->float_num);
-        BIG_ENDIAN_WRITE(buffer, number->float_num, double);
-        buffer += sizeof(number->float_num);
+        BIG_ENDIAN_WRITE(*buffer, number->float_num, double);
         break;
     }
     }
@@ -347,17 +217,16 @@ size_t __encode_number(number_t *number, char *buffer)
     return numbytes;
 }
 
-size_t __encode_string(string_t *string, char *buffer)
+size_t __encode_string(string_t *string, dyn_buffer_t *buffer)
 {
     size_t numbytes = 0;
 
     numbytes += sizeof(string->len);
-    BIG_ENDIAN_WRITE(buffer, string->len, size_t);
-    buffer += sizeof(string->len);
+    BIG_ENDIAN_WRITE(*buffer, string->len, size_t);
 
     for (size_t i = 0; i < string->len; ++i)
     {
-        buffer[i] = string->chars[i];
+        DYNARRAY_PUSH(*buffer, string->chars[i], char);
     }
 
     numbytes += string->len;
@@ -365,17 +234,16 @@ size_t __encode_string(string_t *string, char *buffer)
     return numbytes;
 }
 
-size_t __encode_symbol(symbol_t *symbol, char *buffer)
+size_t __encode_symbol(symbol_t *symbol, dyn_buffer_t *buffer)
 {
     size_t numbytes = 0;
 
     numbytes += sizeof(symbol->len);
-    BIG_ENDIAN_WRITE(buffer, symbol->len, size_t);
-    buffer += sizeof(symbol->len);
+    BIG_ENDIAN_WRITE(*buffer, symbol->len, size_t);
 
     for (size_t i = 0; i < symbol->len; ++i)
     {
-        buffer[i] = symbol->chars[i];
+        DYNARRAY_PUSH(*buffer, symbol->chars[i], char);
     }
 
     numbytes += symbol->len;
