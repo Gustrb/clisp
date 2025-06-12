@@ -4,6 +4,7 @@
 
 int alloc_init(alloc_context_t *ctx, size_t size)
 {
+#ifdef ALLOC_TESTS
     if (!ctx)
         return ALLOC_ERR_INVALID_ARG;
 
@@ -12,12 +13,14 @@ int alloc_init(alloc_context_t *ctx, size_t size)
     ctx->els = (el_t *)calloc(size, sizeof(el_t));
     if (!ctx->els)
         return ALLOC_ERR_MALLOC_FAILED;
+#endif
 
     return 0;
 }
 
 void *alloc_alloc(alloc_context_t *ctx, size_t size)
 {
+#ifdef ALLOC_TESTS
     if (!ctx)
         return NULL;
 
@@ -40,12 +43,15 @@ void *alloc_alloc(alloc_context_t *ctx, size_t size)
     ctx->els[ctx->elements].ptr = ptr;
 
     ctx->elements++;
-
     return ptr;
+#else
+    return malloc(size);
+#endif
 }
 
 void alloc_free(alloc_context_t *ctx, void *ptr)
 {
+#ifdef ALLOC_TESTS
     if (!ctx)
         return;
 
@@ -60,10 +66,14 @@ void alloc_free(alloc_context_t *ctx, void *ptr)
             return;
         }
     }
+#else
+    free(ptr);
+#endif
 }
 
 int alloc_free_context(alloc_context_t *ctx)
 {
+#ifdef ALLOC_TESTS
     if (!ctx)
         return ALLOC_ERR_INVALID_ARG;
 
@@ -76,12 +86,13 @@ int alloc_free_context(alloc_context_t *ctx)
     ctx->els = NULL;
     ctx->elements = 0;
     ctx->cap = 0;
-
+#endif
     return 0;
 }
 
 int alloc_were_all_allocations_freed(alloc_context_t *ctx)
 {
+#ifdef ALLOC_TESTS
     if (!ctx)
         return ALLOC_ERR_INVALID_ARG;
 
@@ -90,12 +101,14 @@ int alloc_were_all_allocations_freed(alloc_context_t *ctx)
         if (ctx->els[i].is_free == 0)
             return 0;
     }
+#endif
 
     return 1;
 }
 
 void *alloc_realloc(alloc_context_t *ctx, void *ptr, size_t size)
 {
+#ifdef ALLOC_TESTS
     if (!ctx)
         return NULL;
 
@@ -111,6 +124,9 @@ void *alloc_realloc(alloc_context_t *ctx, void *ptr, size_t size)
             return new_ptr;
         }
     }
+#else
+    return realloc(ptr, size);
+#endif
 
     return NULL;
 }

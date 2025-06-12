@@ -3,7 +3,7 @@ build-tests:
 	gcc -o dist/lexer.tests tests/lexer.tests.c src/lexer.c -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/parser.tests tests/parser.tests.c src/parser.c src/lexer.c -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/serialize-deserialize.tests tests/serialize-deserialize.tests.c src/serialize.c src/parser.c src/lexer.c -O3 -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
-	gcc -o dist/alloc.tests tests/alloc.tests.c src/alloc.c -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/alloc.tests tests/alloc.tests.c src/alloc.c -DALLOC_TESTS -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 
 	gcc -o dist/serial-over-the-wire.server tests/serial-over-the-wire/server.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/serial-over-the-wire.client tests/serial-over-the-wire/client.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm

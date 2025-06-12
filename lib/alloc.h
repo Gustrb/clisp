@@ -12,9 +12,11 @@ typedef struct
 
 typedef struct
 {
+#ifdef ALLOC_TESTS
     el_t *els;
     size_t elements;
     size_t cap;
+#endif
 } alloc_context_t;
 
 #define ALLOC_ERR_INVALID_ARG -1

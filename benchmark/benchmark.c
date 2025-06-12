@@ -23,6 +23,9 @@ double benchmark_get_time(void)
 
 #endif
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 double benchmark_stddev(double *measures, size_t size, double avg)
 {
     if (measures == NULL || size == 0)
@@ -100,14 +103,8 @@ void benchmark_report(char *name, double *measures, size_t size)
     for (size_t i = 0; i < size; i++)
     {
         sum += measures[i];
-        if (measures[i] < min)
-        {
-            min = measures[i];
-        }
-        if (measures[i] > max)
-        {
-            max = measures[i];
-        }
+        min = MIN(min, measures[i]);
+        max = MAX(max, measures[i]);
     }
 
     double avg = sum / size;
