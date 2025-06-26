@@ -4,6 +4,7 @@ build-tests:
 	gcc -o dist/parser.tests tests/parser.tests.c src/parser.c src/lexer.c -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/serialize-deserialize.tests tests/serialize-deserialize.tests.c src/serialize.c src/parser.c src/lexer.c -O3 -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/alloc.tests tests/alloc.tests.c src/alloc.c -DALLOC_TESTS -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/raft.tests tests/raft.tests.c src/raft.c src/alloc.c src/serialize.c src/parser.c src/lexer.c -DALLOC_TESTS -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 
 	gcc -o dist/serial-over-the-wire.server tests/serial-over-the-wire/server.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/serial-over-the-wire.client tests/serial-over-the-wire/client.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
@@ -23,6 +24,7 @@ run-tests:
 	./dist/parser.tests
 	./dist/serialize-deserialize.tests
 	./dist/alloc.tests
+	./dist/raft.tests
 
 	./dist/serial-over-the-wire.server&
 	sleep 1
