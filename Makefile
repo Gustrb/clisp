@@ -19,6 +19,12 @@ build-benchmarks:
 	./dist/fixturegen ./benchmark/fixtures/medium.lisp 10000
 	./dist/fixturegen ./benchmark/fixtures/large.lisp 100000
 
+build-distributed:
+	echo "Building distributed Raft parser..."
+	$(eval RAFT_LIB_DIR := lib/raft-c)
+	$(eval RAFT_OBJS := $(RAFT_LIB_DIR)/raft_server.o $(RAFT_LIB_DIR)/raft_log.o $(RAFT_LIB_DIR)/raft_node.o $(RAFT_LIB_DIR)/raft_server_properties.o)
+	gcc -o dist/distributed.raft src/distributed/single-threaded/main.c $(RAFT_OBJS) src/lexer.c src/parser.c src/io.c src/serialize.c benchmark/benchmark.c -O3 -I ./lib -I $(RAFT_LIB_DIR) -Wall -Wextra -pedantic -lm -lpthread
+
 run-tests:
 	./dist/lexer.tests
 	./dist/parser.tests
@@ -49,3 +55,6 @@ run-plain:
 	FILES=$$(find ./benchmark/fixtures/data -type f -name "*.lisp" | paste -sd ' ' -); \
 	time ./dist/plain.singlethread $$FILES; \
 	time ./dist/plain.threaded $$FILES;
+
+run-distributed:
+	./dist/distributed.raft

@@ -19,6 +19,7 @@ int should_parse_nested_function_calls(void);
 int should_parse_empty_list(void);
 int should_fail_to_parse_unfinished_lists(void);
 int should_parse_a_mathematical_expression(void);
+int should_parse_multiple_arithmetic_expressions_on_separate_lines(void);
 
 int main(void)
 {
@@ -39,6 +40,7 @@ int main(void)
     err = err || should_parse_empty_list();
     err = err || should_fail_to_parse_unfinished_lists();
     err = err || should_parse_a_mathematical_expression();
+    err = err || should_parse_multiple_arithmetic_expressions_on_separate_lines();
 
     if (err == 0)
     {
@@ -607,5 +609,30 @@ int should_parse_a_mathematical_expression(void)
 
     parser_free_program(&program);
     fprintf(stdout, "[PASS] should_parse_a_mathematical_expression\n");
+    return 0;
+}
+
+int should_parse_multiple_arithmetic_expressions_on_separate_lines(void)
+{
+    fprintf(stdout, "[TEST] should_parse_multiple_arithmetic_expressions_on_separate_lines\n");
+    parser_t parser;
+    program_t program = {0};
+    char *input = "(+ 1 2)\n(- 10 5)\n(* 3 4)\n(/ 20 4)\n";
+    int err = parser_init(&parser, input, strlen(input));
+    if (err)
+        return 1;
+    err = parser_parse(&parser, &program);
+    if (err)
+    {
+        fprintf(stderr, "[FAIL] parser_parse failed: %d\n", err);
+        return 1;
+    }
+    if (program.size != 4)
+    {
+        fprintf(stderr, "[FAIL] Expected 4 top-level forms, got %zu\n", program.size);
+        return 1;
+    }
+    parser_free_program(&program);
+    fprintf(stdout, "[PASS] should_parse_multiple_arithmetic_expressions_on_separate_lines\n");
     return 0;
 }

@@ -149,6 +149,14 @@ int lexer_next_token(lexer_t *lexer, token_t *token)
                 lexer->pos++;
                 goto falltrough;
             }
+            case '/':
+            {
+                token->type = TOK_DIVIDE;
+                token->start = &lexer->input[lexer->pos];
+                token->len = 1;
+                lexer->pos++;
+                goto falltrough;
+            }
             case '\"':
             {
                 start = lexer->pos;
