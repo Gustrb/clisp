@@ -44,13 +44,14 @@ int parser_parse(parser_t *parser, program_t *program)
     int err;
     while (parser->current_token.type != TOK_EOF)
     {
-        form_t form;
+        form_t form = {0};
         err = parser_parse_form(parser, &form);
         if (err)
             return err;
 
         DYNARRAY_PUSH(*program, form, form_t);
 
+        // Always advance token after parsing a form
         err = lexer_next_token(&parser->lexer, &parser->current_token);
         if (err)
             return err;
@@ -69,25 +70,27 @@ int parser_parse_form(parser_t *parser, form_t *form)
     int err;
     if (parser->current_token.type == TOK_LPAREN)
     {
-        list_t list;
+        list_t list = {0};
         form->type = FORM_LIST;
         list.items = NULL;
         list.size = 0;
         list.capacity = 0;
         err = parser_parse_list(parser, &list);
         if (err)
+        {
             return err;
-
+        }
         form->list = list;
     }
     else
     {
-        atom_t atom;
+        atom_t atom = {0};
         form->type = FORM_ATOM;
         err = parser_parse_atom(parser, &atom);
         if (err)
+        {
             return err;
-
+        }
         form->atom = atom;
     }
 
@@ -114,10 +117,12 @@ int parser_parse_list(parser_t *parser, list_t *list)
             return PARSER_ERR_UNEXPECTED_EOF;
         }
 
-        form_t form;
+        form_t form = {0};
         err = parser_parse_form(parser, &form);
         if (err)
+        {
             return err;
+        }
 
         DYNARRAY_PUSH(*list, form, form_t);
 
@@ -126,6 +131,7 @@ int parser_parse_list(parser_t *parser, list_t *list)
             return err;
     }
 
+    // Do NOT advance past the closing ')'
     return 0;
 }
 
@@ -159,12 +165,16 @@ int parser_parse_atom(parser_t *parser, atom_t *atom)
         if (err)
             return err;
     }
-    else if (parser->current_token.type == TOK_PLUS || parser->current_token.type == TOK_MINUS || parser->current_token.type == TOK_MULTIPLY)
+    else if (parser->current_token.type == TOK_PLUS || parser->current_token.type == TOK_MINUS || parser->current_token.type == TOK_MULTIPLY || parser->current_token.type == TOK_DIVIDE || parser->current_token.type == TOK_EQUAL)
     {
         atom->type = ATOM_SYMBOL;
         err = parser_parse_symbol(parser, &atom->sym);
         if (err)
             return err;
+    }
+    else
+    {
+        return PARSER_ERR_ATOM_NOT_DEFINED;
     }
 
     return 0;

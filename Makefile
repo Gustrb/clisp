@@ -4,6 +4,7 @@ build-tests:
 	gcc -o dist/parser.tests tests/parser.tests.c src/parser.c src/lexer.c -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/serialize-deserialize.tests tests/serialize-deserialize.tests.c src/serialize.c src/parser.c src/lexer.c -O3 -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/alloc.tests tests/alloc.tests.c src/alloc.c -DALLOC_TESTS -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
+	gcc -o dist/raft.tests tests/raft.tests.c src/raft.c src/alloc.c src/serialize.c src/parser.c src/lexer.c -DALLOC_TESTS -O3 -I ./lib -Wall -Wall -Wextra -pedantic -lm
 
 	gcc -o dist/serial-over-the-wire.server tests/serial-over-the-wire/server.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
 	gcc -o dist/serial-over-the-wire.client tests/serial-over-the-wire/client.c src/serialize.c src/parser.c src/lexer.c -DPARSER_TESTS -I ./lib -Wall -Wall -Wextra -pedantic -lm
@@ -18,11 +19,18 @@ build-benchmarks:
 	./dist/fixturegen ./benchmark/fixtures/medium.lisp 10000
 	./dist/fixturegen ./benchmark/fixtures/large.lisp 100000
 
+build-distributed:
+	echo "Building distributed Raft parser..."
+	$(eval RAFT_LIB_DIR := lib/raft-c)
+	$(eval RAFT_OBJS := $(RAFT_LIB_DIR)/raft_server.o $(RAFT_LIB_DIR)/raft_log.o $(RAFT_LIB_DIR)/raft_node.o $(RAFT_LIB_DIR)/raft_server_properties.o)
+	gcc -o dist/distributed.raft src/distributed/single-threaded/main.c $(RAFT_OBJS) src/lexer.c src/parser.c src/io.c src/serialize.c benchmark/benchmark.c -O3 -I ./lib -I $(RAFT_LIB_DIR) -Wall -Wextra -pedantic -lm -lpthread
+
 run-tests:
 	./dist/lexer.tests
 	./dist/parser.tests
 	./dist/serialize-deserialize.tests
 	./dist/alloc.tests
+	./dist/raft.tests
 
 	./dist/serial-over-the-wire.server&
 	sleep 1
@@ -47,3 +55,6 @@ run-plain:
 	FILES=$$(find ./benchmark/fixtures/data -type f -name "*.lisp" | paste -sd ' ' -); \
 	time ./dist/plain.singlethread $$FILES; \
 	time ./dist/plain.threaded $$FILES;
+
+run-distributed:
+	./dist/distributed.raft

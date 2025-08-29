@@ -14,6 +14,7 @@ typedef enum
     TOK_MULTIPLY,
     TOK_PLUS,
     TOK_MINUS,
+    TOK_DIVIDE,
     TOK_STRING_LITERAL,
     TOK_FLOAT,
     TOK_EQUAL,
