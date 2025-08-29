@@ -2,3 +2,4 @@ dist/**
 logs_**/**
 benchmark/fixtures/**/**.lisp
 **/*.o
+*.log
